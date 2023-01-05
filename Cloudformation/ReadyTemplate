@@ -1,0 +1,241 @@
+AWSTemplateFormatVersion: 2010-09-09
+Metadata:
+  'AWS::CloudFormation::Designer':
+    4b6db231-d43b-4c3e-bc0f-baa8af744375:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 690
+        'y': 180
+      z: 1
+      embeds: []
+    713e2109-dc22-41af-82dd-b26dd7a2db0e:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 590
+        'y': 180
+      z: 1
+      embeds: []
+      dependson:
+        - 4b6db231-d43b-4c3e-bc0f-baa8af744375
+    29d04301-d691-4146-9a3c-b45a1aa311d0:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 480
+        'y': 180
+      z: 1
+      embeds: []
+      dependson:
+        - 713e2109-dc22-41af-82dd-b26dd7a2db0e
+    8469f4d3-be9f-4a6a-952b-9cae962e96f7:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 380
+        'y': 180
+      z: 1
+      embeds: []
+      dependson:
+        - 29d04301-d691-4146-9a3c-b45a1aa311d0
+    a615ebf6-8ec0-4fec-8f1d-ecf026d194c3:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 270
+        'y': 230
+      z: 0
+      embeds: []
+      dependson:
+        - 8469f4d3-be9f-4a6a-952b-9cae962e96f7
+    1411c908-e8d7-475a-8bfd-230f2b772e53:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 270
+        'y': 100
+      z: 0
+      embeds: []
+      dependson:
+        - 8469f4d3-be9f-4a6a-952b-9cae962e96f7
+        - b7d3cd59-9559-44e9-89a9-908c905d2033
+    b7d3cd59-9559-44e9-89a9-908c905d2033:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 690
+        'y': 80
+      z: 0
+      dependson:
+        - 4b6db231-d43b-4c3e-bc0f-baa8af744375
+    147ffba3-5f24-4c2b-8e74-207ba34574b3:
+      source:
+        id: 1411c908-e8d7-475a-8bfd-230f2b772e53
+      target:
+        id: b7d3cd59-9559-44e9-89a9-908c905d2033
+      z: 3
+Resources:
+  S3B1ZEI4:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: adrianoglozatest
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 4b6db231-d43b-4c3e-bc0f-baa8af744375
+  GD5C4EU:
+    Type: 'AWS::Glue::Database'
+    Properties:
+      CatalogId: !Ref 'AWS::AccountId'
+      DatabaseInput:
+        Name: athena_adrianogloza
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 713e2109-dc22-41af-82dd-b26dd7a2db0e
+    DependsOn:
+      - S3B1ZEI4
+  GT4MPXX:
+    Type: 'AWS::Glue::Table'
+    Properties:
+      CatalogId: !Ref 'AWS::AccountId'
+      DatabaseName: athena_adrianogloza
+      TableInput:
+        Name: weather
+        Description: Table for storing data in Parquet format
+        StorageDescriptor:
+          Columns:
+            - Name: lat
+              Type: double
+            - Name: lon
+              Type: double
+            - Name: co
+              Type: double
+            - Name: nh3
+              Type: double
+            - Name: 'no'
+              Type: double
+            - Name: no2
+              Type: double
+            - Name: o3
+              Type: double
+            - Name: pm10
+              Type: double
+            - Name: pm2_5
+              Type: double
+            - Name: so2
+              Type: double
+            - Name: datetime_UTC
+              Type: string
+            - Name: dt
+              Type: bigint
+            - Name: city
+              Type: string
+          InputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+          OutputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+          SerdeInfo:
+            SerializationLibrary: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+          Location: 's3://adrianoglozatest/parquet'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 29d04301-d691-4146-9a3c-b45a1aa311d0
+    DependsOn:
+      - GD5C4EU
+  BCEI2V9:
+    Type: 'AWS::Batch::ComputeEnvironment'
+    Properties:
+      ComputeEnvironmentName: adrian
+      Type: MANAGED
+      ComputeResources:
+        Type: EC2
+        Subnets:
+          - subnet-058b66b418ba2ca61
+          - subnet-08106fabcc0a74521
+          - subnet-0c8b7c4a3478aae6c
+          - subnet-0b6c171f77c4d68c4
+          - subnet-0899bb72e0fd64c6d
+          - subnet-0b0cad4f1cafdff55
+        MinvCpus: 0
+        MaxvCpus: 24
+        SecurityGroupIds:
+          - sg-09af4be414af2011c
+        InstanceTypes:
+          - optimal
+        InstanceRole: LabInstanceProfile
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 8469f4d3-be9f-4a6a-952b-9cae962e96f7
+    DependsOn:
+      - GT4MPXX
+  BJQ2BW97:
+    Type: 'AWS::Batch::JobQueue'
+    Properties:
+      JobQueueName: adrian_queue
+      ComputeEnvironmentOrder:
+        - Order: 1
+          ComputeEnvironment: adrian
+      Priority: 1
+      State: ENABLED
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: a615ebf6-8ec0-4fec-8f1d-ecf026d194c3
+    DependsOn:
+      - BCEI2V9
+  BJD47YAH:
+    Type: 'AWS::Batch::JobDefinition'
+    Properties:
+      Type: Container
+      ContainerProperties:
+        Image: !Sub '${AWS::AccountId}.dkr.ecr.us-east-1.amazonaws.com/adrianogloza:latest'
+        Vcpus: 2
+        Memory: 2048
+      JobDefinitionName: adrian_job
+      RetryStrategy:
+        Attempts: 1
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 1411c908-e8d7-475a-8bfd-230f2b772e53
+    DependsOn:
+      - BCEI2V9
+      - ECRR2R6VT
+  ECRR2R6VT:
+    Type: 'AWS::ECR::Repository'
+    Properties:
+      RepositoryName: adrianogloza
+      RepositoryPolicyText:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowPushPull
+            Effect: Allow
+            Principal:
+              AWS:
+                - !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action:
+              - 'ecr:GetDownloadUrlForLayer'
+              - 'ecr:BatchGetImage'
+              - 'ecr:BatchCheckLayerAvailability'
+              - 'ecr:PutImage'
+              - 'ecr:InitiateLayerUpload'
+              - 'ecr:UploadLayerPart'
+              - 'ecr:CompleteLayerUpload'
+              - 'ecr:DescribeRepositories'
+              - 'ecr:GetRepositoryPolicy'
+              - 'ecr:ListImages'
+              - 'ecr:DeleteRepository'
+              - 'ecr:BatchDeleteImage'
+              - 'ecr:SetRepositoryPolicy'
+              - 'ecr:DeleteRepositoryPolicy'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: b7d3cd59-9559-44e9-89a9-908c905d2033
+    DependsOn:
+      - S3B1ZEI4

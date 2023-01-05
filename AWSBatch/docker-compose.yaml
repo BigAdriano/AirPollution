@@ -1,0 +1,9 @@
+
+version: '3'
+x-python-common:
+
+  build: .
+  environment:
+
+  env_file:
+    - .env
